@@ -180,4 +180,7 @@ class DataClient(Singleton):
         hishty = self.get(HishtyMan.__HISHTY_OBJECT_ID__, serialization_context=HishtyMan.get_serialization_context())
         return Hishty(start, end, {key: hishty.symbol_infos[key] for key in hishty.symbol_infos if start.strftime("%Y%m%d") <= key <= end.strftime("%Y%m%d")})
 
+    def get_data(start: datetime, end: datetime, cols=List[str]) -> pd.DataFrame:
+        """ 获取所有cols中定义的数据框 """
+        raise NotImplement    
 ```
