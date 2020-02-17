@@ -153,6 +153,7 @@ class DataService(Singleton, threading.Thread):
 ```
 
 ## Data client
+According to the user-specified list of fields, the data for the relevant fields is organized into a dataframe return. This dataframe is indexed by date.
 ```python
 class DataClient(Singleton):
     def __init__(self, plasma_store_name: str = None):
@@ -181,6 +182,6 @@ class DataClient(Singleton):
         return Hishty(start, end, {key: hishty.symbol_infos[key] for key in hishty.symbol_infos if start.strftime("%Y%m%d") <= key <= end.strftime("%Y%m%d")})
 
     def get_data(start: datetime, end: datetime, cols=List[str]) -> pd.DataFrame:
-        """ 获取所有cols中定义的数据框 """
+        """ Get the data frames defined in all cols """
         raise NotImplement    
 ```
