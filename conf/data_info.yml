@@ -1,0 +1,437 @@
+# type
+#single_time_series_table: 定义时间序列数据表的属性，只支持单表操作，由于是基本的表操作, 将自动生成sql语句
+#joined_time_series_table: 定义复合的时间序列数据表的属性，支持多表联合查询操作，必须提供联合查询的sql语句
+#1. 对于时间日期字段，可以用datetime_index或pare_dates来标识。被标识的列将被转换为datetime格式。
+#2. datetime_index和updatetime_index 用于控制adam数据与caihua库同步
+#转换方法用的定义采用pandas的标准方式，即用冒号隔开，后面以strftime格式（http://strftime.org/）标识出转换方法。
+#
+#single_version_table: 定义非时间序列数据表的属性，只支持单表操作，将自动生成sql语句，不可自行定义
+#joined_version_table: 定义复合的非时间序列数据表的属性，支持多表联合查询操作，必须提供联合查询的sql语句
+
+CAIHUI_TABLE:
+  DOCS: 财汇数据表配置信息
+  SYNC_START_DATE:
+  DATA_TYPE: mysql
+  TABLES:
+    CHDQUOTE_ADJ:
+      type: single_time_series_table
+      datetime_index: TDATE
+      other_indices: [SYMBOL, EXCHANGE]
+      other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, NDEALS,
+        PCHG, MCAP, TCAP, TURNOVER]
+      parse_dates:
+        TDATE: {format: '%Y%m%d'}
+      docs: 每日收盘行情价前复权表
+    CHDQUOTE:
+      type: single_time_series_table
+      datetime_index: TDATE
+      other_indices: [SYMBOL, EXCHANGE]
+      other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, NDEALS,
+        PCHG, MCAP, TCAP, TURNOVER]
+      parse_dates:
+        TDATE: {format: '%Y%m%d'}
+      docs: 每日行情收盘价表
+    CIHDQUOTE:
+      type: single_time_series_table
+      datetime_index: TDATE
+      other_indices: [SYMBOL, EXCHANGE]
+      other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, CHG, PCHG]
+      parse_dates:
+        TDATE: {format: '%Y%m%d'}
+      docs: 指数中国历史日交易
+    CIHDQUOTE_SELECTED:
+      caihui_table_name: CIHDQUOTE
+      type: joined_time_series_table
+      datetime_index: TDATE
+      other_indices: [SYMBOL, EXCHANGE]
+      other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, CHG, PCHG]
+      parse_dates:
+        TDATE: {format: '%Y%m%d'}
+      sql: select TDATE,SYMBOL,EXCHANGE,SNAME,LCLOSE,TOPEN,TCLOSE,HIGH,LOW,VOTURNOVER,VATURNOVER,CHG,PCHG from CIHDQUOTE where SYMBOL in ('399673','399106','399102','399101','399012','399008','399006', '399005','399001','000905','000852','000300','000016','000001')
+      docs: 指数中国历史日交易中选择其中的部分指数
+    CHDQUOTE_399001_SELECTED:
+      caihui_table_name: CIHDQUOTE
+      type: joined_time_series_table
+      datetime_index: TDATE
+      other_indices: [SYMBOL, EXCHANGE]
+      other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, CHG, PCHG]
+      parse_dates:
+        TDATE: {format: '%Y%m%d'}
+      sql: select TDATE,SYMBOL,EXCHANGE,SNAME,LCLOSE,TOPEN,TCLOSE,HIGH,LOW,VOTURNOVER,VATURNOVER,CHG,PCHG from CIHDQUOTE where SYMBOL in ('399001')
+      docs: 指数中国历史日交易中选择其中的部分指数
+    DISHTY:
+      type: single_time_series_table
+      datetime_index: DISHTY13
+      other_indices: [SYMBOL]
+      other_cols: [DISHTY1,DISHTY2,DISHTY3,DISHTY4,DISHTY7,DISHTY8,DISHTY9,DISHTY12,
+        DISHTY14,DISHTY15,DISHTY18,DISHTY19,DISHTY32]
+      parse_dates:
+        DISHTY13: {format: '%Y%m%d'}
+      docs: 涉及到除权的股票的除权信息
+
+    IINDEX_COMP:
+      type: joined_version_table
+      index_cols: [ID, TYPECODE]
+      other_cols: []
+      parse_dates: {}
+      sql: SELECT * FROM IINDEX_COMP
+      docs: 行业指数代码对应表
+
+    SECURITYCODE:
+      type: joined_version_table
+      index_cols: [SYMBOL]
+      other_cols: []
+      parse_dates:
+        LISTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      sql: SELECT `SYMBOL`, `SNAME`, `SSPELL`, `EXCHANGE`, `LISTDATE` FROM `SECURITYCODE` WHERE STATUS=0 AND Enabled=0 AND (
+           (`EXCHANGE` = 'CNSESZ' AND `SYMBOL` REGEXP '^00[0-2]|^[23]0') OR
+           (`EXCHANGE` = 'CNSESH' AND `SYMBOL`  REGEXP '^9(00|38|39)|^60[013]')) ORDER BY `SYMBOL` ASC;
+      docs: 证券代码
+
+    SYMBOL_OF_COMPANYCODE:
+      type: joined_version_table
+      index_cols: [COMPANYCODE]
+      other_cols: [SYMBOL, EXCHANGE]
+      parse_dates: {}
+      sql: SELECT DISTINCT b.EXCHANGE,b.SYMBOL,a.COMPANYCODE FROM INDUSTRYCHG a,SECURITYCODE
+        b WHERE a.COMPANYCODE=b.COMPANYCODE AND a.INDUSTRYCHG3="中证行业分类" AND b.STATUS=0
+        AND b.STYPE="EQA"
+      docs: 股票和中证行业分类对应关系数据
+
+    FINANCIALRATIOS:
+      type: single_time_series_table
+      datetime_index: REPORTDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE]
+      other_cols: [FINANCIALRATIOS1, FINANCIALRATIOS2, FINANCIALRATIOS3, FINANCIALRATIOS4,
+        FINANCIALRATIOS5, FINANCIALRATIOS6, FINANCIALRATIOS7, FINANCIALRATIOS8, FINANCIALRATIOS9,
+        FINANCIALRATIOS10, FINANCIALRATIOS11, FINANCIALRATIOS12, FINANCIALRATIOS13, FINANCIALRATIOS14,
+        FINANCIALRATIOS15, FINANCIALRATIOS16, FINANCIALRATIOS17, FINANCIALRATIOS18, FINANCIALRATIOS19,
+        FINANCIALRATIOS20, FINANCIALRATIOS21, FINANCIALRATIOS22, FINANCIALRATIOS23, FINANCIALRATIOS24,
+        FINANCIALRATIOS25, FINANCIALRATIOS26, FINANCIALRATIOS27, FINANCIALRATIOS28, FINANCIALRATIOS29,
+        FINANCIALRATIOS30, FINANCIALRATIOS31, FINANCIALRATIOS32, FINANCIALRATIOS33, FINANCIALRATIOS34,
+        FINANCIALRATIOS35, FINANCIALRATIOS36, FINANCIALRATIOS37, FINANCIALRATIOS38, FINANCIALRATIOS39,
+        FINANCIALRATIOS40, FINANCIALRATIOS41, FINANCIALRATIOS42, FINANCIALRATIOS43, FINANCIALRATIOS44,
+        FINANCIALRATIOS45, FINANCIALRATIOS46, FINANCIALRATIOS47, FINANCIALRATIOS48, FINANCIALRATIOS49,
+        FINANCIALRATIOS50, FINANCIALRATIOS51, FINANCIALRATIOS52, FINANCIALRATIOS53, FINANCIALRATIOS54,
+        FINANCIALRATIOS55, FINANCIALRATIOS56, FINANCIALRATIOS57, FINANCIALRATIOS58, FINANCIALRATIOS59,
+        FINANCIALRATIOS60, FINANCIALRATIOS61, FINANCIALRATIOS62, FINANCIALRATIOS63, FINANCIALRATIOS64,
+        FINANCIALRATIOS65, FINANCIALRATIOS66, FINANCIALRATIOS67, FINANCIALRATIOS68, FINANCIALRATIOS69,
+        FINANCIALRATIOS70, FINANCIALRATIOS71, FINANCIALRATIOS72, FINANCIALRATIOS73, FINANCIALRATIOS74,
+        FINANCIALRATIOS75, FINANCIALRATIOS76, FINANCIALRATIOS77, FINANCIALRATIOS78, FINANCIALRATIOS79,
+        FINANCIALRATIOS80, FINANCIALRATIOS81, FINANCIALRATIOS82, FINANCIALRATIOS83, FINANCIALRATIOS84,
+        FINANCIALRATIOS85]
+      parse_dates:
+        REPORTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 财务指标
+
+    CINST:
+      type: single_time_series_table
+      datetime_index: REPORTDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE, REPORTSTYLE, ADJUSTYEAR]
+      other_cols: [UPDATEDATE, BEGINDATE, REPORTUNIT, PUBLISHDATE, ENTRYDATE, ENTRYTIME,
+        TMSTAMP, FWDATE, CINST1, CINST2, CINST3, CINST4, CINST5, CINST6, CINST7, CINST8,
+        CINST9, CINST10, CINST11, CINST12, CINST13, CINST14, CINST15, CINST16, CINST17,
+        CINST18, CINST19, CINST20, CINST21, CINST22, CINST23, CINST24, CINST25, CINST26,
+        CINST27, CINST28, CINST29, CINST30, CINST31, CINST32, CINST33, CINST34, CINST35,
+        CINST36, CINST37, CINST38, CINST39, CINST40, CINST41, CINST42, CINST43, CINST44,
+        CINST45, CINST46, CINST47, CINST48, CINST49, CINST50, CINST51, CINST52, CINST53,
+        CINST54, CINST55, CINST56, CINST57, CINST58, CINST59, CINST60, CINST61, CINST62,
+        CINST63, CINST64, CINST65, CINST66, CINST67, CINST68, CINST69, CINST70, CINST71,
+        CINST72, CINST73, CINST74, CINST75, CINST76, CINST77, CINST78, CINST79, CINST80,
+        CINST81, CINST82, CINST83, CINST84, CINST85, CINST86, CINST87, CINST88, CINST89,
+        CINST90, CINST91, CINST92, CINST93, CINST94, CINST95, CINST96, CINST97, CINST98,
+        CINST99, CINST100]
+      parse_dates:
+        REPORTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 利润分配表
+
+    MFRATIO:
+      type: single_time_series_table
+      datetime_index: REPORTDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE]
+      other_cols: [UPDATEDATE, MFRATIO1, MFRATIO2, MFRATIO3, MFRATIO4, MFRATIO5, MFRATIO6,
+        MFRATIO7, MFRATIO8, MFRATIO9, MFRATIO10, MFRATIO12, MFRATIO13, MFRATIO14, MFRATIO15,
+        MFRATIO16, MFRATIO17, MFRATIO18, MFRATIO19, MFRATIO20, MFRATIO21, MFRATIO22, MFRATIO23,
+        MFRATIO24, MFRATIO25, MFRATIO26, MFRATIO27, MFRATIO28, MFRATIO29]
+      parse_dates:
+        REPORTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 主要财务指标
+
+    CFST:
+      type: single_time_series_table
+      datetime_index: REPORTDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE, REPORTSTYLE, ADJUSTYEAR]
+      other_cols: [UPDATEDATE, BEGINDATE, REPORTUNIT, PUBLISHDATE, ENTRYDATE, ENTRYTIME,
+        TMSTAMP, FWDATE, CFST1, CFST2, CFST3, CFST4, CFST5, CFST6, CFST7, CFST8, CFST9,
+        CFST10, CFST11, CFST12, CFST13, CFST14, CFST15, CFST16, CFST17, CFST18, CFST19,
+        CFST20, CFST21, CFST22, CFST23, CFST24, CFST25, CFST26, CFST27, CFST28, CFST29,
+        CFST30, CFST31, CFST32, CFST33, CFST34, CFST35, CFST36, CFST37, CFST38, CFST39,
+        CFST40, CFST41, CFST42, CFST43, CFST44, CFST45, CFST46, CFST47, CFST48, CFST49,
+        CFST50, CFST51, CFST52, CFST53, CFST54, CFST55, CFST56, CFST57, CFST58, CFST59,
+        CFST60, CFST61, CFST62, CFST63, CFST64, CFST65, CFST66, CFST67, CFST68, CFST69,
+        CFST70, CFST71, CFST72, CFST73, CFST74, CFST75, CFST76, CFST77, CFST78, CFST79,
+        CFST80, CFST81, CFST82, CFST83, CFST84, CFST85, CFST86, CFST87, CFST88, CFST89,
+        CFST90, CFST91, CFST92, CFST93, CFST94, CFST95, CFST96, CFST97, CFST98, CFST99,
+        CFST100, CFST101, CFST102, CFST103, CFST104, CFST105, CFST106, CFST107, CFST108,
+        CFST109, CFST110, CFST111, CFST112, CFST113, CFST114, CFST115, CFST116, CFST117,
+        CFST118, CFST119, CFST120, CFST121, CFST122]
+      parse_dates:
+        REPORTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 现金流量表
+
+    CBSHEET:
+      type: single_time_series_table
+      datetime_index: REPORTDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE, REPORTSTYLE, ADJUSTYEAR]
+      other_cols: [UPDATEDATE, CBSHEET1, CBSHEET2, CBSHEET3, CBSHEET4, CBSHEET5, CBSHEET6,
+        CBSHEET7, CBSHEET8, CBSHEET9, CBSHEET10, CBSHEET11, CBSHEET12, CBSHEET13, CBSHEET14,
+        CBSHEET15, CBSHEET16, CBSHEET17, CBSHEET18, CBSHEET19, CBSHEET20, CBSHEET21, CBSHEET22,
+        CBSHEET23, CBSHEET24, CBSHEET25, CBSHEET26, CBSHEET27, CBSHEET28, CBSHEET29, CBSHEET30,
+        CBSHEET31, CBSHEET32, CBSHEET33, CBSHEET34, CBSHEET35, CBSHEET36, CBSHEET37, CBSHEET38,
+        CBSHEET39, CBSHEET40, CBSHEET41, CBSHEET42, CBSHEET43, CBSHEET44, CBSHEET45, CBSHEET46,
+        CBSHEET47, CBSHEET48, CBSHEET49, CBSHEET50, CBSHEET51, CBSHEET52, CBSHEET53, CBSHEET54,
+        CBSHEET55, CBSHEET56, CBSHEET57, CBSHEET58, CBSHEET59, CBSHEET60, CBSHEET61, CBSHEET62,
+        CBSHEET63, CBSHEET64, CBSHEET65, CBSHEET66, CBSHEET67, CBSHEET68, CBSHEET69, CBSHEET70,
+        CBSHEET71, CBSHEET72, CBSHEET73, CBSHEET74, CBSHEET75, CBSHEET76, CBSHEET77, CBSHEET78,
+        CBSHEET79, CBSHEET80, CBSHEET81, CBSHEET82, CBSHEET83, CBSHEET84, CBSHEET85, CBSHEET86,
+        CBSHEET87, CBSHEET88, CBSHEET93, CBSHEET94, CBSHEET95, CBSHEET97, CBSHEET98, CBSHEET96,
+        CBSHEET99, CBSHEET100, CBSHEET101, CBSHEET102, CBSHEET103, CBSHEET104, CBSHEET105,
+        CBSHEET106, CBSHEET107, CBSHEET108, CBSHEET109, CBSHEET110, CBSHEET111, CBSHEET112,
+        CBSHEET113, CBSHEET114, CBSHEET115, CBSHEET116, CBSHEET117, CBSHEET118, CBSHEET119,
+        CBSHEET120, CBSHEET121, CBSHEET122, CBSHEET123, CBSHEET124, CBSHEET125, CBSHEET126,
+        CBSHEET127, CBSHEET128, CBSHEET129, CBSHEET130, CBSHEET131, CBSHEET132, CBSHEET133,
+        CBSHEET134, CBSHEET135, CBSHEET136, CBSHEET137, CBSHEET138, CBSHEET139, CBSHEET140,
+        CBSHEET141, CBSHEET142, CBSHEET143, CBSHEET144, CBSHEET145, CBSHEET146, CBSHEET147,
+        CBSHEET148, CBSHEET149, CBSHEET150, CBSHEET151, CBSHEET152, CBSHEET153, CBSHEET154,
+        CBSHEET155, CBSHEET156, CBSHEET157, CBSHEET158, CBSHEET159, CBSHEET160, CBSHEET161,
+        CBSHEET162, CBSHEET163, CBSHEET164, CBSHEET165, CBSHEET166, CBSHEET167, CBSHEET168,
+        CBSHEET169, CBSHEET170, CBSHEET171, CBSHEET172]
+      parse_dates:
+        REPORTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 资产负债表
+
+    ESTR:
+      type: single_time_series_table
+      datetime_index: ESTR1
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE, ESTR2]
+      other_cols: [ESTR3, ESTR4, ESTR5, ESTR6, ESTR7, ESTR8, ESTR9, ESTR10, ESTR11, ESTR12,
+        ESTR13, ESTR14, ESTR15, ESTR18]
+      parse_dates:
+        ESTR1: {format: '%Y-%m-%d %H:%i:%s'}
+        ESTR2: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 公司雇员
+
+    SCSTC:
+      type: single_time_series_table
+      datetime_index: DECLAREDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE]
+      other_cols: [PUBLISHDATE, SCSTC1, SCSTC2, SCSTC3, SCSTC4, SCSTC5, SCSTC6, SCSTC7,
+        SCSTC8, SCSTC9, SCSTC10, SCSTC11, SCSTC12, SCSTC13, SCSTC14, SCSTC15, SCSTC16,
+        SCSTC17, SCSTC18, SCSTC19, SCSTC20, SCSTC21, SCSTC22, SCSTC23, SCSTC24, SCSTC25,
+        SCSTC26, SCSTC27, SCSTC28, SCSTC29, SCSTC30, SCSTC31, SCSTC32, SCSTC33, SCSTC34,
+        SCSTC35, SCSTC36, SCSTC37, SCSTC38, SCSTC39, SCSTC40, SCSTC41, SCSTC42, SCSTC43,
+        SCSTC44, SCSTC45, SCSTC46, SCSTC47, SCSTC48, SCSTC49, SCSTC50, SCSTC51, SCSTC52,
+        SCSTC53, SCSTC54, SCSTC55, SCSTC56, SCSTC57, SCSTC58, SCSTC59, SCSTC60, SCSTC61,
+        SCSTC62, SCSTC63, SCSTC64]
+      parse_dates:
+        DECLAREDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 股本结构
+
+    INDUSTRYCHG_SW:
+      type: joined_version_table
+      index_cols: [INDUSTRYCHGID]
+      other_cols: []
+      parse_dates:
+        PUBLISHDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      sql: 'SELECT INDUSTRYCHGID,COMPANYCODE,PUBLISHDATE,INDUSTRYCHG4,INDUSTRYCHG8 FROM
+        INDUSTRYCHG WHERE INDUSTRYCHG3=''申万行业分类(2014)'' '
+      docs: 申万行业分类(2014)
+
+    SHAREHDCHG:
+      type: single_time_series_table
+      datetime_index: DECLAREDATE
+      updatetime_index: ENTRYDATE
+      other_indices: [COMPANYCODE]
+      other_cols: [SHAREHDCHG1, SHAREHDCHG2, SHAREHDCHG3, SHAREHDCHG4, SHAREHDCHG5, SHAREHDCHG6,
+        SHAREHDCHG7, SHAREHDCHG8, SHAREHDCHG9, SHAREHDCHG10, SHAREHDCHG11, SHAREHDCHG12,
+        SHAREHDCHG13, SHAREHDCHG14, SHAREHDCHG15, SHAREHDCHG16, SHAREHDCHG17, SHAREHDCHG18,
+        SHAREHDCHG19, SHAREHDCHG20]
+      parse_dates:
+        DECLAREDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 股东增减持
+
+    DERFQUOTE:
+      type: single_time_series_table
+      other_indices: [SYMBOL, EXCHANGE]
+      datetime_index: TDATE
+      updatetime_index:
+      docs: 获取股票相关价值因子
+      other_cols: [PE, PB, PCF, PS]
+      parse_dates:
+        TDATE: {format: '%Y%m%d'}
+
+    IDCOMPT:
+      type: joined_version_table
+      index_cols: [ICODE]
+      other_cols: []
+      parse_dates: {}
+      sql: SELECT ICODE, SYMBOL FROM IDCOMPT WHERE ICODE IN ('801010', '801020', '801030', '801040', '801050', '801080', '801110', '801120', '801130', '801140', '801150', '801160', '801170', '801180', '801200', '801210', '801230', '801710', '801720', '801730', '801740', '801750', '801760', '801770', '801780', '801790', '801880', '801890') AND USESTATUS=-1 ORDER BY SYMBOL ASC
+      docs: 申万一级行业成分股
+
+    CICS_TBIWEIGHT:
+      type: single_time_series_table
+      datetime_index: EFFECTIVEDATE
+      updatetime_index:
+      other_indices: [INDEXCODE]
+      other_cols: [INDEXNAME, INCLUSIONDATE, CONSTITUENTCODE, CONSTITUENTNAME, TOTALSHARES, CFACTOR, CSHARES, CAPFACTOR]
+      parse_dates:
+        EFFECTIVEDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 成分股信息
+
+    NAV:
+      type: single_time_series_table
+      datetime_index: PUBLISHDATE
+      other_indices: [SYMBOL]
+      other_cols: [DECLAREDATE,NAV7,NAV1,NAV2]
+      parse_dates:
+        PUBLISHDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 基金净值表
+
+    CPROFILE:
+      caihui_table_name: CPROFILE
+      type: joined_time_series_table
+      datetime_index: CProFile35
+      other_indices: [COMPANYCODE]
+      other_cols: [CProfile38, SYMBOL]
+      parse_dates:
+        CProFile35: {format: '%Y-%m-%d %H:%i:%s'}
+      sql: SELECT CPROFILE.COMPANYCODE as COMPANYCODE,CPROFILE.CProFile35 as CProFile35,CPROFILE.CProfile38 as CProfile38,SECURITYCODE.SYMBOL as SYMBOL
+           FROM CPROFILE LEFT JOIN SECURITYCODE
+           ON CPROFILE.COMPANYCODE = SECURITYCODE.COMPANYCODE
+      docs: 公司概况
+
+    AUDITREPORT:
+      type: single_time_series_table
+      datetime_index: REPORTDATE
+      other_indices: [AUDITREPORT_ID]
+      other_cols: [COMPANYCODE, AUDITREPORT3, AUDITREPORT4]
+      parse_dates:
+        REPORTDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 获取审计意见类型
+
+    FUNDTYPES:
+      type: single_time_series_table
+      datetime_index: CHANGEDATE
+      other_indices: [FUNDTYPESID]
+      other_cols: [Symbol, ChangeDate, EndDate, FundTypes2]
+      parse_dates:
+        CHANGEDATE: {format: '%Y-%m-%d %H:%i:%s'}
+      docs: 基金分类表
+
+  TL_TABLES:
+    CHDQUOTE_ADJ:
+      type: single_time_series_table
+      datetime_index: TRADE_DATE
+      other_indices: [TICKER_SYMBOL, EXCHANGE_CD]
+      keys: [TRADE_DATE, TICKER_SYMBOL, EXCHANGE_CD]
+      other_cols: [SEC_SHORT_NAME, PRE_CLOSE_PRICE_1, OPEN_PRICE_1, CLOSE_PRICE_1, HIGHEST_PRICE_1, LOWEST_PRICE_1, TURNOVER_VOL, TURNOVER_VALUE, DEAL_AMOUNT, CHG_PCT, NEG_MARKET_VALUE, MARKET_VALUE, TURNOVER_RATE]
+      ch_keys: [SYMBOL, EXCHANGE]
+      ch_other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, NDEALS, PCHG, MCAP, TCAP, TURNOVER]
+      parse_dates:
+        TRADE_DATE: {format: '%Y%m%d'}
+      sql: 'select a.TRADE_DATE,a.TICKER_SYMBOL,a.EXCHANGE_CD,b.SEC_SHORT_NAME,a.PRE_CLOSE_PRICE_1, a.OPEN_PRICE_1,a.CLOSE_PRICE_1,a.HIGHEST_PRICE_1,a.LOWEST_PRICE_1,c.TURNOVER_VOL,c.TURNOVER_VALUE,c.DEAL_AMOUNT,c.CHG_PCT,c.NEG_MARKET_VALUE,c.MARKET_VALUE,c.TURNOVER_RATE from mkt_equd_adj a,md_security b,mkt_equd c where a.SECURITY_ID=b.SECURITY_ID and a.TICKER_SYMBOL=c.TICKER_SYMBOL and a.TRADE_DATE=c.TRADE_DATE and a.TRADE_DATE>={start!s} and a.TRADE_DATE<={end!s} and a.HIGHEST_PRICE_1!=0'
+      docs: 每日收盘行情价前复权表
+    CHDQUOTE:
+      type: single_time_series_table
+      datetime_index: TRADE_DATE
+      other_indices: [TICKER_SYMBOL, EXCHANGE_CD]
+      keys: [TRADE_DATE, TICKER_SYMBOL, EXCHANGE_CD]
+      other_cols: [SEC_SHORT_NAME, PRE_CLOSE_PRICE, OPEN_PRICE, CLOSE_PRICE, HIGHEST_PRICE, LOWEST_PRICE, TURNOVER_VOL, TURNOVER_VALUE, DEAL_AMOUNT, CHG_PCT, NEG_MARKET_VALUE, MARKET_VALUE, TURNOVER_RATE]
+      ch_keys: [SYMBOL, EXCHANGE]
+      ch_other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, NDEALS, PCHG, MCAP, TCAP, TURNOVER]
+      parse_dates:
+        TRADE_DATE: {format: '%Y%m%d'}
+      sql: 'select a.TRADE_DATE,a.TICKER_SYMBOL,a.EXCHANGE_CD,b.SEC_SHORT_NAME,a.PRE_CLOSE_PRICE, a.OPEN_PRICE,a.CLOSE_PRICE,a.HIGHEST_PRICE,a.LOWEST_PRICE,a.TURNOVER_VOL,a.TURNOVER_VALUE,a.DEAL_AMOUNT,a.CHG_PCT,a.NEG_MARKET_VALUE,a.MARKET_VALUE,a.TURNOVER_RATE from mkt_equd a,md_security b where a.SECURITY_ID=b.SECURITY_ID and a.TRADE_DATE>={start!s} and a.TRADE_DATE<={end!s} and a.HIGHEST_PRICE!=0'
+      docs: 每日行情收盘价表
+    CIHDQUOTE:
+      type: single_time_series_table
+      datetime_index: TRADE_DATE
+      other_indices: [TICKER_SYMBOL, EXCHANGE_CD]
+      keys: [TRADE_DATE, TICKER_SYMBOL, EXCHANGE_CD]
+      other_cols: [SEC_SHORT_NAME, PRE_CLOSE_INDEX, OPEN_INDEX, CLOSE_INDEX, HIGHEST_INDEX, LOWEST_INDEX, TURNOVER_VOL, TURNOVER_VALUE, CHG, CHG_PCT]
+      ch_keys: [SYMBOL, EXCHANGE]
+      ch_other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, CHG, PCHG]
+      parse_dates:
+        TRADE_DATE: {format: '%Y%m%d'}
+      sql: 'select a.TRADE_DATE,a.TICKER_SYMBOL,a.EXCHANGE_CD,b.SEC_SHORT_NAME,a.PRE_CLOSE_INDEX,a.OPEN_INDEX,a.CLOSE_INDEX,a.HIGHEST_INDEX,a.LOWEST_INDEX,a.TURNOVER_VOL,a.TURNOVER_VALUE,a.CHG,a.CHG_PCT from mkt_idxd a,md_security b where a.TICKER_SYMBOL=b.TICKER_SYMBOL and a.INDEX_ID=b.SECURITY_ID and a.TRADE_DATE>={start!s} and a.TRADE_DATE<={end!s} and a.HIGHEST_INDEX!=0'
+      docs: 指数中国历史日交易
+    CIHDQUOTE_SELECTED:
+      type: single_time_series_table
+      datetime_index: TRADE_DATE
+      other_indices: [TICKER_SYMBOL, EXCHANGE_CD]
+      keys: [TRADE_DATE, TICKER_SYMBOL, EXCHANGE_CD]
+      other_cols: [SEC_SHORT_NAME, PRE_CLOSE_INDEX, OPEN_INDEX, CLOSE_INDEX, HIGHEST_INDEX, LOWEST_INDEX, TURNOVER_VOL, TURNOVER_VALUE, CHG, CHG_PCT]
+      ch_keys: [SYMBOL, EXCHANGE]
+      ch_other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, CHG, PCHG]
+      parse_dates:
+        TRADE_DATE: {format: '%Y%m%d'}
+      sql: select a.TRADE_DATE,a.TICKER_SYMBOL,a.EXCHANGE_CD,b.SEC_SHORT_NAME,a.PRE_CLOSE_INDEX,a.OPEN_INDEX,a.CLOSE_INDEX,a.HIGHEST_INDEX,a.LOWEST_INDEX,a.TURNOVER_VOL,a.TURNOVER_VALUE,a.CHG,a.CHG_PCT from mkt_idxd a,md_security b where a.TICKER_SYMBOL=b.TICKER_SYMBOL and a.INDEX_ID=b.SECURITY_ID and a.TICKER_SYMBOL in ('399673','399106','399102','399101','399012','399008','399006', '399005','399001','000905','000852','000300','000016','000001') and a.TRADE_DATE>={start!s} and a.TRADE_DATE<={end!s} and a.HIGHEST_INDEX!=0
+      docs: 指数中国历史日交易中选择其中的部分指数
+    CHDQUOTE_399001_SELECTED:
+      type: single_time_series_table
+      datetime_index: TRADE_DATE
+      other_indices: [TICKER_SYMBOL, EXCHANGE_CD]
+      keys: [TRADE_DATE, TICKER_SYMBOL, EXCHANGE_CD]
+      other_cols: [SEC_SHORT_NAME, PRE_CLOSE_INDEX, OPEN_INDEX, CLOSE_INDEX, HIGHEST_INDEX, LOWEST_INDEX, TURNOVER_VOL, TURNOVER_VALUE, CHG, CHG_PCT]
+      ch_keys: [SYMBOL, EXCHANGE]
+      ch_other_cols: [SNAME, LCLOSE, TOPEN, TCLOSE, HIGH, LOW, VOTURNOVER, VATURNOVER, CHG, PCHG]
+      parse_dates:
+        TRADE_DATE: {format: '%Y%m%d'}
+      sql: select a.TRADE_DATE,a.TICKER_SYMBOL,a.EXCHANGE_CD,b.SEC_SHORT_NAME,a.PRE_CLOSE_INDEX,a.OPEN_INDEX,a.CLOSE_INDEX,a.HIGHEST_INDEX,a.LOWEST_INDEX,a.TURNOVER_VOL,a.TURNOVER_VALUE,a.CHG,a.CHG_PCT from mkt_idxd a,md_security b where a.TICKER_SYMBOL=b.TICKER_SYMBOL and a.INDEX_ID=b.SECURITY_ID and a.TICKER_SYMBOL in ('399001') and a.TRADE_DATE>={start!s} and a.TRADE_DATE<={end!s} and a.HIGHEST_INDEX!=0
+      docs: 指数中国历史日交易中选择其中的部分指数
+
+    DERFQUOTE:
+      type: single_time_series_table
+      datetime_index: TRADE_DATE
+      other_indices: [TICKER_SYMBOL, SECURITY_ID]
+      keys: [TRADE_DATE, TICKER_SYMBOL, SECURITY_ID]
+      other_cols: [PE, PB, PCF, PS]
+      ch_keys: [SYMBOL, EXCHANGE]
+      ch_other_cols: [PE, PB, PCF, PS]
+      parse_dates:
+        TRADE_DATE: {format: '%Y%m%d'}
+      sql: 'select TRADE_DATE,TICKER_SYMBOL,SECURITY_ID,PE,PB,PCF,PS from equ_factor_VS where TRADE_DATE>={start!s} and TRADE_DATE<={end!s}'
+      docs: 获取股票相关价值因子
+
+#    FINANCIALRATIOS:
+#      type: single_time_series_table
+#      datetime_index: END_DATE
+#      updatetime_index: UPDATE_TIME
+#      other_indices: [TICKER_SYMBOL]
+#      keys: [END_DATE, TICKER_SYMBOL]
+#      other_cols: [SEC_SHORT_NAME, PRE_CLOSE_PRICE_1, OPEN_PRICE_1, CLOSE_PRICE_1, HIGHEST_PRICE_1, LOWEST_PRICE_1, TURNOVER_VOL, TURNOVER_VALUE, DEAL_AMOUNT, CHG_PCT, NEG_MARKET_VALUE, MARKET_VALUE, TURNOVER_RATE]
+#      ch_keys: [SYMBOL]
+#      ch_other_cols: [FINANCIALRATIOS1, FINANCIALRATIOS26, FINANCIALRATIOS28, FINANCIALRATIOS30, FINANCIALRATIOS32,
+#        FINANCIALRATIOS36, FINANCIALRATIOS37, FINANCIALRATIOS40, FINANCIALRATIOS44, FINANCIALRATIOS53,
+#        FINANCIALRATIOS56, FINANCIALRATIOS57, FINANCIALRATIOS58, FINANCIALRATIOS59,
+#        FINANCIALRATIOS62, FINANCIALRATIOS63, FINANCIALRATIOS65, FINANCIALRATIOS66]
+#      parse_dates:
+#        END_DATE: {format: '%Y-%m-%d %H:%i:%s'}
+#      sql: 'select a.TRADE_DATE,a.TICKER_SYMBOL,a.EXCHANGE_CD,b.SEC_SHORT_NAME,a.PRE_CLOSE_PRICE_1, a.OPEN_PRICE_1,a.CLOSE_PRICE_1,a.HIGHEST_PRICE_1,a.LOWEST_PRICE_1,c.TURNOVER_VOL,c.TURNOVER_VALUE,c.DEAL_AMOUNT,c.CHG_PCT,c.NEG_MARKET_VALUE,c.MARKET_VALUE,c.TURNOVER_RATE from mkt_equd_adj a,md_security b,mkt_equd c where a.SECURITY_ID=b.SECURITY_ID and a.TICKER_SYMBOL=c.TICKER_SYMBOL and a.TRADE_DATE=c.TRADE_DATE and a.TRADE_DATE>={start!s} and a.TRADE_DATE<={end!s}'
+#      docs: 财务指标
+
+MINUTE_LINE:
+  DOCS: 股票数据分钟线
+  DATA_TYPE: CSV
+  DATA_SRC_INFO:
+    IP: t0.chong.so
+    USERNAME: fanc
+    PASSWORD: fanchao
+    DIR_NAME: /home/fanc/5_mins_bufuqun

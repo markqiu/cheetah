@@ -1,0 +1,178 @@
+# 数据层数据字段定义
+# dtype说明：https://www.tutorialspoint.com/numpy/numpy_data_types.htm
+# 在配置中可以直接引用superdataframe对象实例中的变量，如果没有这个变量则直接作为字符串处理。
+# 公共变量列表：
+#    1. start： 表示数据框的开始时间
+#    2. end: 表示数据框的结束时间，一般为最后一个交易日
+DataItems:
+    symbol:
+        dtype: S13
+        description: 证券代码，格式为symbol.exchange
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - 证券代码
+    证券名称:
+        dtype: U6
+        description: 证券名称
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - SNAME
+    昨日收盘价:
+        dtype: f3
+        description: 昨日收盘价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - LCLOSE
+        dependencies: []
+    当日收盘价:
+        dtype: f3
+        description: 昨日收盘价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - TCLOSE
+        dependencies: []
+    当日最高价:
+        dtype: f3
+        description: 当日最高价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - HIGH
+        dependencies: []
+    当日最低价:
+        dtype: f3
+        description: 当日最低价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - LOW
+        dependencies: []
+    当日开盘价:
+        dtype: f3
+        description: 当日开盘价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - OPEN
+        dependencies: []
+    当前PE:
+        dtype: f3
+        description: 当前PE
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - PE
+        dependencies: []
+Factors:
+    10日前收盘价:
+        dtype: f3
+        description: 10日前收盘价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - TCLOSE_10
+        dependencies: []
+    20日前收盘价:
+        dtype: f3
+        description: 20日前收盘价
+        belong_to: CHDQUOTE_ADJ
+        alias:
+            - TCLOSE_20
+        dependencies: []
+    atr_close_10:
+        dtype: f3
+        description: atr收盘价
+        belong_to: CHDQUOTE_ADJ
+    atr_num_10:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+    atr_close_20:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    atr_num_20:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+    position_rate_399001:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+    cur_position:
+        dtype: f3
+        description: 当前建议仓位
+        belong_to: CHDQUOTE_ADJ
+    position_rate_advice_399001:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias: []
+        dependencies: []
+    position:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+    market_trend_shape_399001:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    market_trend:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    screening_signal_SCORE:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    trade_signal_SIGNAL:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    trade_signal_REASON:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    risk_signal_identity:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    risk_explain:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    现金分红比率:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    转送股比率:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    配股比率:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
+    配股价格:
+        dtype: f3
+        description:
+        belong_to: CHDQUOTE_ADJ
+        alias:
+        dependencies: []
