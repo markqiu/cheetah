@@ -14,7 +14,7 @@ from pyarrow._plasma import ObjectNotAvailable
 from pyarrow.lib import SerializationContext
 from ruamel.yaml import YAML
 
-from models.base import SuperModel
+from .models import SuperModel
 from .service import DataMan, T
 import logging
 from datetime import datetime, timedelta

@@ -4,10 +4,21 @@ version = "0.1.0"
 description = "高速灵活的数据缓存服务"
 authors = ["Cheng Qiu <qiucheng@jinniuai.com>"]
 
+[[tool.poetry.source]]
+name = 'tsinghua'
+url = 'https://pypi.tuna.tsinghua.edu.cn/simple'
+
+[[tool.poetry.source]]
+name = 'aliyun'
+url = 'https://mirrors.aliyun.com/pypi/simple/'
+default = true
+
 [tool.poetry.dependencies]
 python = "^3.7"
 pydantic = "^1.5.1"
 pyarrow = "^0.17.0"
+"ruamel.yaml" = "^0.16.10"
+pandas = "^1.0.3"
 
 [tool.poetry.dev-dependencies]
 

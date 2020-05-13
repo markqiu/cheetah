@@ -8,7 +8,7 @@ from pyarrow import plasma, SerializationContext
 from pyarrow.plasma import PlasmaStoreFull, ObjectNotAvailable, PlasmaObjectExists
 
 from .plasma_store import start_plasma_store, equipment_id_to_object_id
-from ..singleton import Singleton
+from .singleton import Singleton
 
 T = TypeVar("T")
 
