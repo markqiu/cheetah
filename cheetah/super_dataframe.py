@@ -150,8 +150,7 @@ class SuperDataFrameMan(DataMan):
 
     def init_dataframe(self):
         """以交易日为索引，建立起初始数据框"""
-        self.sdf = get_series_data("CHDQUOTE_ADJ", start_datetime=self.数据区间[0], end_datetime=self.数据区间[1], cols=["SNAME", "TCLOSE"])
-        logging.info(self.sdf.info())
+        self.sdf = None
 
     def update_data(self):
         pass

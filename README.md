@@ -185,3 +185,13 @@ class DataClient(Singleton):
         """ Get the data frames defined in all cols """
         raise NotImplement    
 ```
+
+## Developemtn Envirnment
+### Installation
+```shell script
+poetry install
+```
+### unit test
+```shell script
+pytest
+```
