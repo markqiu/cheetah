@@ -440,22 +440,78 @@ Factors:
         dependencies: []
     盘后时间:
         dtype: f3
-        description: 卖n价
+        description: 盘后时间
         belong_to: EmQuant
         alias:
             - ClosedTime
         dependencies: []
     盘后成交量:
         dtype: f3
-        description: 卖n价
+        description: 盘后成交量
         belong_to: EmQuant
         alias:
             - ClosedVolume
         dependencies: []
     盘后成交额:
         dtype: f3
-        description: 卖n价
+        description: 盘后成交额
         belong_to: EmQuant
         alias:
             - ClosedAmount
+        dependencies: []
+    超大单流入额:
+        dtype: f3
+        description: 超大单流入额
+        belong_to: EmQuant
+        alias:
+            - SUPINFLOW
+        dependencies: []
+    超大单流出额:
+        dtype: f3
+        description: 超大单流出额
+        belong_to: EmQuant
+        alias:
+            - SUPOUTFLOW
+        dependencies: []
+    大单流入额:
+        dtype: f3
+        description: 大单流入额
+        belong_to: EmQuant
+        alias:
+            - BIGINFLOW
+        dependencies: []
+    大单流出额:
+        dtype: f3
+        description: 大单流出额
+        belong_to: EmQuant
+        alias:
+            - BIGOUTFLOW
+        dependencies: []
+    中单流入额:
+        dtype: f3
+        description: 中单流入额
+        belong_to: EmQuant
+        alias:
+            - MIDINFLOW
+        dependencies: []
+    中单流出额:
+        dtype: f3
+        description: 中单流出额
+        belong_to: EmQuant
+        alias:
+            - MIDOUTFLOW
+        dependencies: []
+    小单流入额:
+        dtype: f3
+        description: 小单流入额
+        belong_to: EmQuant
+        alias:
+            - SMINFLOW
+        dependencies: []
+    小单流出额:
+        dtype: f3
+        description: 小单流出额
+        belong_to: EmQuant
+        alias:
+            - SMOUTFLOW
         dependencies: []
