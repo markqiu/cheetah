@@ -1,6 +1,7 @@
 # 数据层数据字段定义
 # dtype说明：https://www.tutorialspoint.com/numpy/numpy_data_types.htm
 # 在配置中可以直接引用superdataframe对象实例中的变量，如果没有这个变量则直接作为字符串处理。
+# 所有字段大小写不敏感
 Factors:
     symbol:
         dtype: S13
@@ -20,38 +21,41 @@ Factors:
         belong_to: CHDQUOTE_ADJ
         alias:
             - LCLOSE
+            - PreClose
+            - 前收盘价
         dependencies: []
-    当日收盘价:
+    收盘价:
         dtype: f3
-        description: 昨日收盘价
+        description: 收盘价
         belong_to: CHDQUOTE_ADJ
         alias:
             - TCLOSE
         dependencies: []
-    当日最高价:
+    最高价:
         dtype: f3
         description: 当日最高价
         belong_to: CHDQUOTE_ADJ
         alias:
             - HIGH
+            - 当日最高价
         dependencies: []
-    当日最低价:
+    最低价:
         dtype: f3
         description: 当日最低价
         belong_to: CHDQUOTE_ADJ
         alias:
-            - LOW
+            - Low
         dependencies: []
-    当日开盘价:
+    开盘价:
         dtype: f3
         description: 当日开盘价
         belong_to: CHDQUOTE_ADJ
         alias:
             - OPEN
         dependencies: []
-    当前PE:
+    PE:
         dtype: f3
-        description: 当前PE
+        description: PE
         belong_to: CHDQUOTE_ADJ
         alias:
             - PE
@@ -173,4 +177,285 @@ Factors:
         description:
         belong_to: CHDQUOTE_ADJ
         alias:
+        dependencies: []
+    交易日期:
+        dtype: f3
+        description: 交易日期
+        belong_to: EmQuant
+        alias:
+        - Date
+        - 日期
+        dependencies: []
+    交易时间:
+        dtype: f3
+        description: 交易时间
+        belong_to: EmQuant
+        alias: Time
+        dependencies: []
+    最新价:
+        dtype: f3
+        description: 最新价
+        belong_to: EmQuant
+        alias:
+        - Now
+        - 当前价
+        dependencies: []
+    现手:
+        dtype: f3
+        description: 现手
+        belong_to: EmQuant
+        alias:
+        - Roundlot
+        dependencies: []
+    涨跌:
+        dtype: f3
+        description: 涨跌
+        belong_to: EmQuant
+        alias:
+        - Change
+        dependencies: []
+    涨跌幅:
+        dtype: f3
+        description: 涨跌幅
+        belong_to: EmQuant
+        alias:
+        - PctChange
+        dependencies: []
+    成交量:
+        dtype: f3
+        description: 成交量
+        belong_to: EmQuant
+        alias:
+        - Volume
+        dependencies: []
+    成交额:
+        dtype: f3
+        description: 成交额
+        belong_to: EmQuant
+        alias:
+        - Amount
+        dependencies: []
+    量比:
+        dtype: f3
+        description: 量比
+        belong_to: EmQuant
+        alias:
+            - VolumeRatio
+        dependencies: []
+    委比:
+        dtype: f3
+        description: 委比
+        belong_to: EmQuant
+        alias:
+            - CommissionRatio
+        dependencies: []
+    委差:
+        dtype: f3
+        description: 委差
+        belong_to: EmQuant
+        alias:
+            - CommissionDiff
+        dependencies: []
+    交易状态:
+        dtype: f3
+        description: 交易状态
+        belong_to: EmQuant
+        alias:
+            - Tradestatus
+        dependencies: []
+    外盘:
+        dtype: f3
+        description: 外盘
+        belong_to: EmQuant
+        alias:
+            - OutVolume
+        dependencies: []
+    内盘:
+        dtype: f3
+        description: 内盘
+        belong_to: EmQuant
+        alias:
+            - InVolume
+        dependencies: []
+    涨停价:
+        dtype: f3
+        description: 涨停价
+        belong_to: EmQuant
+        alias:
+            - HighLimit
+        dependencies: []
+    跌停价:
+        dtype: f3
+        description: 跌停价
+        belong_to: EmQuant
+        alias:
+            - LowLimit
+        dependencies: []
+    涨速:
+        dtype: f3
+        description: 涨速
+        belong_to: EmQuant
+        alias:
+            - Speed
+        dependencies: []
+    买1价:
+        dtype: f3
+        description: 买n价
+        belong_to: EmQuant
+        alias:
+            - BuyPrice1
+        dependencies: []
+    买2价:
+        dtype: f3
+        description: 买n价
+        belong_to: EmQuant
+        alias:
+            - BuyPrice2
+        dependencies: []
+    买3价:
+        dtype: f3
+        description: 买n价
+        belong_to: EmQuant
+        alias:
+            - BuyPrice3
+        dependencies: []
+    买4价:
+        dtype: f3
+        description: 买n价
+        belong_to: EmQuant
+        alias:
+            - BuyPrice4
+        dependencies: []
+    买5价:
+        dtype: f3
+        description: 买n价
+        belong_to: EmQuant
+        alias:
+            - BuyPrice5
+        dependencies: []
+    买1量:
+        dtype: f3
+        description: 买n量
+        belong_to: EmQuant
+        alias:
+            - BuyVolume1
+        dependencies: []
+    买2量:
+        dtype: f3
+        description: 买n量
+        belong_to: EmQuant
+        alias:
+            - BuyVolume2
+        dependencies: []
+    买3量:
+        dtype: f3
+        description: 买n量
+        belong_to: EmQuant
+        alias:
+            - BuyVolume3
+        dependencies: []
+    买4量:
+        dtype: f3
+        description: 买n量
+        belong_to: EmQuant
+        alias:
+            - BuyVolume4
+        dependencies: []
+    买5量:
+        dtype: f3
+        description: 买n量
+        belong_to: EmQuant
+        alias:
+            - BuyVolume5
+        dependencies: []
+    卖1价:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellPrice1
+        dependencies: []
+    卖2价:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellPrice2
+        dependencies: []
+    卖3价:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellPrice3
+        dependencies: []
+    卖4价:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellPrice4
+        dependencies: []
+    卖5价:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellPrice5
+        dependencies: []
+    卖1量:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellVolume1
+        dependencies: []
+    卖2量:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellVolume2
+        dependencies: []
+    卖3量:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellVolume3
+        dependencies: []
+    卖4量:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellVolume4
+        dependencies: []
+    卖5量:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - SellVolume5
+        dependencies: []
+    盘后时间:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - ClosedTime
+        dependencies: []
+    盘后成交量:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - ClosedVolume
+        dependencies: []
+    盘后成交额:
+        dtype: f3
+        description: 卖n价
+        belong_to: EmQuant
+        alias:
+            - ClosedAmount
         dependencies: []
